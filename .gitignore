@@ -1,0 +1,31 @@
+# Environment / secrets
+.env
+**/.env
+!.env.example
+
+# Node
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+
+# Flutter / Dart
+frontend/campus_find/.dart_tool/
+frontend/campus_find/.flutter-plugins
+frontend/campus_find/.flutter-plugins-dependencies
+frontend/campus_find/.packages
+frontend/campus_find/pubspec.lock
+frontend/campus_find/build/
+frontend/campus_find/ios/Pods/
+frontend/campus_find/android/.gradle/
+frontend/campus_find/android/local.properties
+
+# IDE
+.vscode/
+.idea/
+*.iml
+.DS_Store
+
+# Temporary web preview harness (deliverable is mobile-only)
+frontend/campus_find/web/
