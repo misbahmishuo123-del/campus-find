@@ -29,3 +29,4 @@ frontend/campus_find/android/local.properties
 
 # Temporary web preview harness (deliverable is mobile-only)
 frontend/campus_find/web/
+.vercel/
