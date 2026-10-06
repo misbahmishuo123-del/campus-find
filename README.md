@@ -1,4 +1,4 @@
-# CampusFind — University Lost & Found
+# 🎒 CampusFind — University Lost & Found
 
 CampusFind is a university Lost & Found system built as a **Flutter mobile app** that talks to a **Node.js + Express + TypeScript REST API** backed by **MongoDB Atlas**.
 
@@ -8,41 +8,67 @@ Students and staff can report lost and found items, search, see ranked *possible
 
 ---
 
-## Quick Start & Development
+## 🚀 Quick Start & Local Development
 
-Get the whole system running locally in three steps.
+1. **Install backend dependencies:**
 
-**1. Backend** (from the `backend/` folder):
-```bash
-npm install
-cp .env.example .env     # then fill in your real MONGODB_URI and JWT_SECRET
-npm run dev              # API on http://localhost:5000
-```
+   ```bash
+   cd backend
+   npm install
+   ```
 
-**2. Seed demo data** (development only, separate terminal in `backend/`):
-```bash
-npm run seed
-```
+2. **Configure secrets** (create `backend/.env` from the example, then fill in your real values):
 
-**3. Flutter app** (from the `frontend/campus_find/` folder):
-```bash
-flutter pub get
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5000/api   # Android emulator
-# or, for a browser preview on this machine:
-# flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:5000/api
-```
+   ```bash
+   cp .env.example .env
+   ```
 
-Sign in with a demo account (see *13. Demo instructions*), then report an item,
-check *Possible Matches*, submit a claim, and approve it from the admin account
-to see the full workflow.
+3. **Run the local dev server:**
 
-Useful development commands: `npm run dev` (backend auto-reload), `npx tsc --noEmit`
-(type-check), `node scripts/e2e.mjs` (end-to-end workflow test), `flutter analyze`,
-`flutter test`.
+   ```bash
+   npm run dev
+   ```
+
+   Open `http://localhost:5000/api/health` in your browser — you should see
+   `"database":"connected"`.
+
+4. **Run the Flutter app** (separate terminal):
+
+   ```bash
+   cd frontend/campus_find
+   flutter pub get
+   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5000/api   # Android emulator
+   # or: flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:5000/api
+   ```
+
+**Demo Account / Seed Dataset:** load demo users + sample items with `npm run seed`
+(development only), then log in with:
+
+- **Admin** — Email: `admin@campusfind.edu` · Password: `Admin@123`
+- **Student** — Email: `sara@student.campusfind.edu` · Password: `Student@123`
+- **Student** — Email: `ali@student.campusfind.edu` · Password: `Student@123`
 
 ---
 
-## 1. Architecture
+## 🧪 Acceptance Test Workflow
+
+1. Log in as **sara** (student) and open the lost wallet report.
+2. Tap **View possible matches** — the found wallet appears with a 100-point score breakdown.
+3. Log in as **ali** and open the found wallet → **Claim this item**, answering the secret verification question.
+4. Log in as **admin** → **Review claims** → open the claim; note whether the verification answer matched.
+5. **Approve** the claim, then **Mark item as returned**.
+6. Log back in as the owner and confirm the **Notifications** updated at each step.
+
+Automated version (backend must be running):
+
+```bash
+cd backend
+node scripts/e2e.mjs
+```
+
+---
+
+## 🏗️ 1. Architecture
 
 ```
 Flutter (mobile app)
@@ -60,7 +86,7 @@ MongoDB Atlas  (users, items, claims, notifications, auditLogs)
 
 ---
 
-## 2. Technologies
+## 🛠️ 2. Technologies
 
 **Frontend:** Flutter, Dart, Material 3, Provider (state management), http, flutter_secure_storage, intl.
 **Backend:** Node.js, Express, TypeScript, Mongoose, jsonwebtoken, bcryptjs, cors, dotenv.
@@ -68,7 +94,7 @@ MongoDB Atlas  (users, items, claims, notifications, auditLogs)
 
 ---
 
-## 3. Folder structure
+## 📁 3. Folder structure
 
 ```
 CampusFind/
@@ -107,7 +133,7 @@ CampusFind/
 
 ---
 
-## 4. Installation
+## 📦 4. Installation
 
 ### Prerequisites
 - Node.js 18+ and npm
@@ -132,7 +158,7 @@ flutter pub get
 
 ---
 
-## 5. Environment variables
+## 🔐 5. Environment variables
 
 Create `backend/.env` (a ready `.env.example` is provided). **Never commit `.env`.**
 
@@ -153,7 +179,7 @@ No secret is ever placed in Dart files, Flutter config, the README, or git.
 
 ---
 
-## 6. MongoDB Atlas setup
+## 🗄️ 6. MongoDB Atlas setup
 
 1. Create a free cluster at mongodb.com/cloud/atlas.
 2. Create a database user (username + password).
@@ -165,7 +191,7 @@ Collections used: `users`, `items`, `claims`, `notifications`, `auditlogs`.
 
 ---
 
-## 7. Backend startup
+## ▶️ 7. Backend startup
 
 ```bash
 cd backend
@@ -184,7 +210,7 @@ Optional: seed demo data (see section 13).
 
 ---
 
-## 8. Flutter startup
+## 📱 8. Flutter startup
 
 First, tell the app where the backend is. The base URL is **not** a secret and is
 supplied at run time via `--dart-define` (default in `lib/core/constants.dart` is
@@ -206,7 +232,7 @@ flutter run --dart-define=API_BASE_URL=http://192.168.x.x:5000/api
 
 ---
 
-## 9. API overview
+## 🔌 9. API overview
 
 Base path: `/api`
 
@@ -243,7 +269,7 @@ Base path: `/api`
 
 ---
 
-## 10. User roles
+## 👥 10. User roles
 
 | Role | Can do |
 |------|--------|
@@ -254,7 +280,7 @@ Roles are enforced **only** on the backend from the signed JWT. A role sent from
 
 ---
 
-## 11. Main workflow
+## 🔄 11. Main workflow
 
 ```
 LOST  →  FOUND  →  POSSIBLE MATCH  →  CLAIM  →  ADMIN VERIFICATION  →  RETURNED
@@ -274,7 +300,7 @@ Verification answers are stored **hashed** (bcrypt) and are never returned by an
 
 ---
 
-## 12. Security notes
+## 🛡️ 12. Security notes
 
 - bcrypt password hashing, JWT auth, role-based authorization.
 - Input validation and protected routes.
@@ -283,7 +309,7 @@ Verification answers are stored **hashed** (bcrypt) and are never returned by an
 
 ---
 
-## 13. Demo instructions
+## 🎮 13. Demo instructions
 
 Seed the database with a demo admin, two students, and sample items:
 ```bash
@@ -312,7 +338,7 @@ node scripts/e2e.mjs
 
 ---
 
-## 14. Future enhancements
+## 🔮 14. Future enhancements
 
 - Cloud image upload/storage for item photos (currently a simple image URL field).
 - Optional Gemini-assisted description similarity and unusual-claim flagging (backend-only, still advisory — never auto-deciding).
@@ -322,7 +348,7 @@ node scripts/e2e.mjs
 
 ---
 
-### Commands at a glance
+### ⌨️ Commands at a glance
 ```bash
 # Backend
 cd backend && npm install && npm run dev
