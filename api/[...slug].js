@@ -1,31 +1,37 @@
-module.exports = async function handler(req, res) {
-  const diag = { stage: "start" };
-  try {
-    diag.stage = "require-app";
-    const { createApp } = require("../backend/src/app");
-    diag.stage = "require-db";
-    const { connectDB } = require("../backend/src/config/db");
-    diag.stage = "connect-db";
-    try {
-      await connectDB();
-      diag.db = "connected";
-    } catch (e) {
-      diag.db = "failed: " + (e && e.message ? e.message : String(e));
-    }
-    diag.stage = "serve";
-    const app = createApp();
-    return app(req, res);
-  } catch (err) {
-    res.status(200).json({
-      success: false,
-      diag,
-      error: err && err.message ? err.message : String(err),
-      stack: err && err.stack ? String(err.stack).split("\n").slice(0, 6) : null,
-      env: {
-        hasMongoUri: !!process.env.MONGODB_URI,
-        hasJwtSecret: !!process.env.JWT_SECRET,
-        node: process.version,
-      },
+const { createApp } = require("../backend/dist/app");
+const { connectDB } = require("../backend/dist/config/db");
+
+const app = createApp();
+let dbPromise = null;
+
+function ensureDb() {
+  if (!dbPromise) {
+    dbPromise = (async () => {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await connectDB();
+          return;
+        } catch (err) {
+          console.error(
+            "[vercel] MongoDB connect attempt " + attempt + " failed:",
+            err && err.message ? err.message : err
+          );
+          if (attempt < 3) await new Promise((r) => setTimeout(r, 1000));
+        }
+      }
+    })().catch((err) => {
+      dbPromise = null;
+      throw err;
     });
   }
+  return dbPromise;
+}
+
+module.exports = async function handler(req, res) {
+  try {
+    await ensureDb();
+  } catch (err) {
+    console.error("[vercel] db connect error:", err && err.message ? err.message : err);
+  }
+  app(req, res);
 };
