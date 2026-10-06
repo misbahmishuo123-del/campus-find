@@ -8,6 +8,40 @@ Students and staff can report lost and found items, search, see ranked *possible
 
 ---
 
+## Quick Start & Development
+
+Get the whole system running locally in three steps.
+
+**1. Backend** (from the `backend/` folder):
+```bash
+npm install
+cp .env.example .env     # then fill in your real MONGODB_URI and JWT_SECRET
+npm run dev              # API on http://localhost:5000
+```
+
+**2. Seed demo data** (development only, separate terminal in `backend/`):
+```bash
+npm run seed
+```
+
+**3. Flutter app** (from the `frontend/campus_find/` folder):
+```bash
+flutter pub get
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5000/api   # Android emulator
+# or, for a browser preview on this machine:
+# flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:5000/api
+```
+
+Sign in with a demo account (see *13. Demo instructions*), then report an item,
+check *Possible Matches*, submit a claim, and approve it from the admin account
+to see the full workflow.
+
+Useful development commands: `npm run dev` (backend auto-reload), `npx tsc --noEmit`
+(type-check), `node scripts/e2e.mjs` (end-to-end workflow test), `flutter analyze`,
+`flutter test`.
+
+---
+
 ## 1. Architecture
 
 ```
