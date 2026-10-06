@@ -4,6 +4,9 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -26,26 +29,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// serverless-entry.ts
-var serverless_entry_exports = {};
-__export(serverless_entry_exports, {
-  default: () => handler
-});
-module.exports = __toCommonJS(serverless_entry_exports);
-
-// backend/src/app.ts
-var import_express7 = __toESM(require("express"));
-var import_cors = __toESM(require("cors"));
-
-// backend/src/routes/index.ts
-var import_express6 = require("express");
-
-// backend/src/config/db.ts
-var import_mongoose = __toESM(require("mongoose"));
-
 // backend/src/config/env.ts
-var import_dotenv = __toESM(require("dotenv"));
-import_dotenv.default.config();
 function required(name, fallback) {
   const value = process.env[name] ?? fallback;
   if (value === void 0) {
@@ -53,17 +37,30 @@ function required(name, fallback) {
   }
   return value;
 }
-var env = {
-  port: parseInt(process.env.PORT || "5000", 10),
-  mongoUri: required("MONGODB_URI"),
-  jwtSecret: required("JWT_SECRET", "dev_only_insecure_secret_change_me"),
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
-  geminiApiKey: process.env.GEMINI_API_KEY || "",
-  universityEmailDomain: (process.env.UNIVERSITY_EMAIL_DOMAIN || "").trim()
-};
+var import_dotenv, env;
+var init_env = __esm({
+  "backend/src/config/env.ts"() {
+    "use strict";
+    import_dotenv = __toESM(require("dotenv"));
+    import_dotenv.default.config();
+    env = {
+      port: parseInt(process.env.PORT || "5000", 10),
+      mongoUri: required("MONGODB_URI"),
+      jwtSecret: required("JWT_SECRET", "dev_only_insecure_secret_change_me"),
+      jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
+      geminiApiKey: process.env.GEMINI_API_KEY || "",
+      universityEmailDomain: (process.env.UNIVERSITY_EMAIL_DOMAIN || "").trim()
+    };
+  }
+});
 
 // backend/src/config/db.ts
-var connected = false;
+var db_exports = {};
+__export(db_exports, {
+  connectDB: () => connectDB,
+  disconnectDB: () => disconnectDB,
+  isDBConnected: () => isDBConnected
+});
 async function connectDB() {
   import_mongoose.default.connection.on("connected", () => {
     connected = true;
@@ -83,6 +80,18 @@ async function connectDB() {
 function isDBConnected() {
   return connected && import_mongoose.default.connection.readyState === 1;
 }
+async function disconnectDB() {
+  await import_mongoose.default.disconnect();
+}
+var import_mongoose, connected;
+var init_db = __esm({
+  "backend/src/config/db.ts"() {
+    "use strict";
+    import_mongoose = __toESM(require("mongoose"));
+    init_env();
+    connected = false;
+  }
+});
 
 // backend/src/controllers/healthController.ts
 function health(_req, res) {
@@ -94,56 +103,64 @@ function health(_req, res) {
     timestamp: (/* @__PURE__ */ new Date()).toISOString()
   });
 }
-
-// backend/src/routes/authRoutes.ts
-var import_express = require("express");
-
-// backend/src/models/User.ts
-var import_mongoose2 = __toESM(require("mongoose"));
-var import_bcryptjs = __toESM(require("bcryptjs"));
-var UserSchema = new import_mongoose2.Schema(
-  {
-    name: { type: String, required: true, trim: true },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true
-    },
-    password: { type: String, required: true, select: false },
-    role: {
-      type: String,
-      enum: ["student", "staff", "admin"],
-      default: "student",
-      required: true
-    },
-    phone: { type: String, trim: true },
-    department: { type: String, trim: true },
-    campusId: { type: String, trim: true }
-  },
-  { timestamps: true }
-);
-UserSchema.pre("save", async function(next) {
-  if (!this.isModified("password")) return next();
-  const salt = await import_bcryptjs.default.genSalt(10);
-  this.password = await import_bcryptjs.default.hash(this.password, salt);
-  next();
-});
-UserSchema.methods.comparePassword = function(candidate) {
-  return import_bcryptjs.default.compare(candidate, this.password);
-};
-UserSchema.set("toJSON", {
-  transform: (_doc, ret) => {
-    delete ret.password;
-    delete ret.__v;
-    return ret;
+var init_healthController = __esm({
+  "backend/src/controllers/healthController.ts"() {
+    "use strict";
+    init_db();
   }
 });
-var User = import_mongoose2.default.model("User", UserSchema);
+
+// backend/src/models/User.ts
+var import_mongoose2, import_bcryptjs, UserSchema, User;
+var init_User = __esm({
+  "backend/src/models/User.ts"() {
+    "use strict";
+    import_mongoose2 = __toESM(require("mongoose"));
+    import_bcryptjs = __toESM(require("bcryptjs"));
+    UserSchema = new import_mongoose2.Schema(
+      {
+        name: { type: String, required: true, trim: true },
+        email: {
+          type: String,
+          required: true,
+          unique: true,
+          lowercase: true,
+          trim: true
+        },
+        password: { type: String, required: true, select: false },
+        role: {
+          type: String,
+          enum: ["student", "staff", "admin"],
+          default: "student",
+          required: true
+        },
+        phone: { type: String, trim: true },
+        department: { type: String, trim: true },
+        campusId: { type: String, trim: true }
+      },
+      { timestamps: true }
+    );
+    UserSchema.pre("save", async function(next) {
+      if (!this.isModified("password")) return next();
+      const salt = await import_bcryptjs.default.genSalt(10);
+      this.password = await import_bcryptjs.default.hash(this.password, salt);
+      next();
+    });
+    UserSchema.methods.comparePassword = function(candidate) {
+      return import_bcryptjs.default.compare(candidate, this.password);
+    };
+    UserSchema.set("toJSON", {
+      transform: (_doc, ret) => {
+        delete ret.password;
+        delete ret.__v;
+        return ret;
+      }
+    });
+    User = import_mongoose2.default.model("User", UserSchema);
+  }
+});
 
 // backend/src/utils/jwt.ts
-var import_jsonwebtoken = __toESM(require("jsonwebtoken"));
 function signToken(payload) {
   return import_jsonwebtoken.default.sign(payload, env.jwtSecret, {
     expiresIn: env.jwtExpiresIn
@@ -152,20 +169,33 @@ function signToken(payload) {
 function verifyToken(token) {
   return import_jsonwebtoken.default.verify(token, env.jwtSecret);
 }
+var import_jsonwebtoken;
+var init_jwt = __esm({
+  "backend/src/utils/jwt.ts"() {
+    "use strict";
+    import_jsonwebtoken = __toESM(require("jsonwebtoken"));
+    init_env();
+  }
+});
 
 // backend/src/utils/asyncHandler.ts
-var asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
-var ApiError = class extends Error {
-  constructor(statusCode, message) {
-    super(message);
-    this.statusCode = statusCode;
+var asyncHandler, ApiError;
+var init_asyncHandler = __esm({
+  "backend/src/utils/asyncHandler.ts"() {
+    "use strict";
+    asyncHandler = (fn) => (req, res, next) => {
+      Promise.resolve(fn(req, res, next)).catch(next);
+    };
+    ApiError = class extends Error {
+      constructor(statusCode, message) {
+        super(message);
+        this.statusCode = statusCode;
+      }
+    };
   }
-};
+});
 
 // backend/src/controllers/authController.ts
-var EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function validateEmail(email) {
   if (!EMAIL_REGEX.test(email)) {
     throw new ApiError(400, "Please provide a valid email address");
@@ -181,68 +211,79 @@ function validateEmail(email) {
     }
   }
 }
-var register = asyncHandler(async (req, res) => {
-  const { name, email, password, role, phone, department, campusId } = req.body;
-  if (!name || !email || !password) {
-    throw new ApiError(400, "name, email and password are required");
+var EMAIL_REGEX, register, login, me;
+var init_authController = __esm({
+  "backend/src/controllers/authController.ts"() {
+    "use strict";
+    init_User();
+    init_jwt();
+    init_asyncHandler();
+    init_env();
+    EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    register = asyncHandler(async (req, res) => {
+      const { name, email, password, role, phone, department, campusId } = req.body;
+      if (!name || !email || !password) {
+        throw new ApiError(400, "name, email and password are required");
+      }
+      if (String(password).length < 6) {
+        throw new ApiError(400, "Password must be at least 6 characters");
+      }
+      validateEmail(String(email));
+      const requestedRole = ["student", "staff"].includes(role) ? role : "student";
+      const existing = await User.findOne({ email: email.toLowerCase() });
+      if (existing) {
+        throw new ApiError(409, "An account with this email already exists");
+      }
+      const user = await User.create({
+        name,
+        email: email.toLowerCase(),
+        password,
+        role: requestedRole,
+        phone,
+        department,
+        campusId
+      });
+      const token = signToken({
+        sub: user._id.toString(),
+        role: user.role,
+        name: user.name
+      });
+      res.status(201).json({
+        success: true,
+        message: "Registration successful",
+        data: { token, user }
+      });
+    });
+    login = asyncHandler(async (req, res) => {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        throw new ApiError(400, "email and password are required");
+      }
+      const user = await User.findOne({ email: email.toLowerCase() }).select(
+        "+password"
+      );
+      if (!user) {
+        throw new ApiError(401, "Invalid email or password");
+      }
+      const ok = await user.comparePassword(password);
+      if (!ok) {
+        throw new ApiError(401, "Invalid email or password");
+      }
+      const token = signToken({
+        sub: user._id.toString(),
+        role: user.role,
+        name: user.name
+      });
+      res.json({
+        success: true,
+        message: "Login successful",
+        data: { token, user }
+      });
+    });
+    me = asyncHandler(async (req, res) => {
+      res.json({ success: true, data: { user: req.user } });
+    });
   }
-  if (String(password).length < 6) {
-    throw new ApiError(400, "Password must be at least 6 characters");
-  }
-  validateEmail(String(email));
-  const requestedRole = ["student", "staff"].includes(role) ? role : "student";
-  const existing = await User.findOne({ email: email.toLowerCase() });
-  if (existing) {
-    throw new ApiError(409, "An account with this email already exists");
-  }
-  const user = await User.create({
-    name,
-    email: email.toLowerCase(),
-    password,
-    role: requestedRole,
-    phone,
-    department,
-    campusId
-  });
-  const token = signToken({
-    sub: user._id.toString(),
-    role: user.role,
-    name: user.name
-  });
-  res.status(201).json({
-    success: true,
-    message: "Registration successful",
-    data: { token, user }
-  });
-});
-var login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    throw new ApiError(400, "email and password are required");
-  }
-  const user = await User.findOne({ email: email.toLowerCase() }).select(
-    "+password"
-  );
-  if (!user) {
-    throw new ApiError(401, "Invalid email or password");
-  }
-  const ok = await user.comparePassword(password);
-  if (!ok) {
-    throw new ApiError(401, "Invalid email or password");
-  }
-  const token = signToken({
-    sub: user._id.toString(),
-    role: user.role,
-    name: user.name
-  });
-  res.json({
-    success: true,
-    message: "Login successful",
-    data: { token, user }
-  });
-});
-var me = asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { user: req.user } });
 });
 
 // backend/src/middleware/auth.ts
@@ -253,26 +294,6 @@ function extractToken(req) {
   }
   return null;
 }
-var authenticate = asyncHandler(
-  async (req, _res, next) => {
-    const token = extractToken(req);
-    if (!token) {
-      throw new ApiError(401, "Not authenticated: missing token");
-    }
-    let payload;
-    try {
-      payload = verifyToken(token);
-    } catch {
-      throw new ApiError(401, "Not authenticated: invalid or expired token");
-    }
-    const user = await User.findById(payload.sub);
-    if (!user) {
-      throw new ApiError(401, "Not authenticated: user no longer exists");
-    }
-    req.user = user;
-    next();
-  }
-);
 function authorize(...roles) {
   return (req, _res, next) => {
     if (!req.user) {
@@ -286,71 +307,111 @@ function authorize(...roles) {
     next();
   };
 }
-
-// backend/src/routes/authRoutes.ts
-var router = (0, import_express.Router)();
-router.post("/register", register);
-router.post("/login", login);
-router.get("/me", authenticate, me);
-var authRoutes_default = router;
-
-// backend/src/routes/itemRoutes.ts
-var import_express2 = require("express");
-
-// backend/src/models/Item.ts
-var import_mongoose3 = __toESM(require("mongoose"));
-var ItemSchema = new import_mongoose3.Schema(
-  {
-    type: { type: String, enum: ["lost", "found"], required: true },
-    title: { type: String, required: true, trim: true },
-    category: { type: String, required: true, trim: true, lowercase: true },
-    description: { type: String, required: true, trim: true },
-    color: { type: String, trim: true, lowercase: true },
-    brand: { type: String, trim: true },
-    location: { type: String, required: true, trim: true },
-    date: { type: Date, required: true },
-    time: { type: String, trim: true },
-    imageUrl: { type: String, trim: true },
-    createdBy: {
-      type: import_mongoose3.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-    },
-    campusId: { type: String, trim: true },
-    buildingId: { type: String, trim: true },
-    status: {
-      type: String,
-      enum: ["active", "matched", "claimed", "verified", "returned", "closed"],
-      default: "active"
-    },
-    claimStatus: {
-      type: String,
-      enum: ["none", "pending", "approved", "rejected"],
-      default: "none"
-    },
-    verification: {
-      question: { type: String, trim: true, default: "" },
-      answerHash: { type: String, select: false }
-    },
-    returnedAt: { type: Date }
-  },
-  { timestamps: true }
-);
-ItemSchema.index({ title: "text", description: "text", category: "text" });
-ItemSchema.index({ type: 1, status: 1, createdAt: -1 });
-ItemSchema.set("toJSON", {
-  transform: (_doc, ret) => {
-    delete ret.__v;
-    if (ret.verification) {
-      delete ret.verification.answerHash;
-    }
-    return ret;
+var authenticate;
+var init_auth = __esm({
+  "backend/src/middleware/auth.ts"() {
+    "use strict";
+    init_jwt();
+    init_User();
+    init_asyncHandler();
+    authenticate = asyncHandler(
+      async (req, _res, next) => {
+        const token = extractToken(req);
+        if (!token) {
+          throw new ApiError(401, "Not authenticated: missing token");
+        }
+        let payload;
+        try {
+          payload = verifyToken(token);
+        } catch {
+          throw new ApiError(401, "Not authenticated: invalid or expired token");
+        }
+        const user = await User.findById(payload.sub);
+        if (!user) {
+          throw new ApiError(401, "Not authenticated: user no longer exists");
+        }
+        req.user = user;
+        next();
+      }
+    );
   }
 });
-var Item = import_mongoose3.default.model("Item", ItemSchema);
+
+// backend/src/routes/authRoutes.ts
+var import_express, router, authRoutes_default;
+var init_authRoutes = __esm({
+  "backend/src/routes/authRoutes.ts"() {
+    "use strict";
+    import_express = require("express");
+    init_authController();
+    init_auth();
+    router = (0, import_express.Router)();
+    router.post("/register", register);
+    router.post("/login", login);
+    router.get("/me", authenticate, me);
+    authRoutes_default = router;
+  }
+});
+
+// backend/src/models/Item.ts
+var import_mongoose3, ItemSchema, Item;
+var init_Item = __esm({
+  "backend/src/models/Item.ts"() {
+    "use strict";
+    import_mongoose3 = __toESM(require("mongoose"));
+    ItemSchema = new import_mongoose3.Schema(
+      {
+        type: { type: String, enum: ["lost", "found"], required: true },
+        title: { type: String, required: true, trim: true },
+        category: { type: String, required: true, trim: true, lowercase: true },
+        description: { type: String, required: true, trim: true },
+        color: { type: String, trim: true, lowercase: true },
+        brand: { type: String, trim: true },
+        location: { type: String, required: true, trim: true },
+        date: { type: Date, required: true },
+        time: { type: String, trim: true },
+        imageUrl: { type: String, trim: true },
+        createdBy: {
+          type: import_mongoose3.Schema.Types.ObjectId,
+          ref: "User",
+          required: true
+        },
+        campusId: { type: String, trim: true },
+        buildingId: { type: String, trim: true },
+        status: {
+          type: String,
+          enum: ["active", "matched", "claimed", "verified", "returned", "closed"],
+          default: "active"
+        },
+        claimStatus: {
+          type: String,
+          enum: ["none", "pending", "approved", "rejected"],
+          default: "none"
+        },
+        verification: {
+          question: { type: String, trim: true, default: "" },
+          answerHash: { type: String, select: false }
+        },
+        returnedAt: { type: Date }
+      },
+      { timestamps: true }
+    );
+    ItemSchema.index({ title: "text", description: "text", category: "text" });
+    ItemSchema.index({ type: 1, status: 1, createdAt: -1 });
+    ItemSchema.set("toJSON", {
+      transform: (_doc, ret) => {
+        delete ret.__v;
+        if (ret.verification) {
+          delete ret.verification.answerHash;
+        }
+        return ret;
+      }
+    });
+    Item = import_mongoose3.default.model("Item", ItemSchema);
+  }
+});
 
 // backend/src/utils/hash.ts
-var import_bcryptjs2 = __toESM(require("bcryptjs"));
 function normalizeAnswer(answer) {
   return answer.trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -360,6 +421,13 @@ async function hashAnswer(answer) {
 async function compareAnswer(answer, hash) {
   return import_bcryptjs2.default.compare(normalizeAnswer(answer), hash);
 }
+var import_bcryptjs2;
+var init_hash = __esm({
+  "backend/src/utils/hash.ts"() {
+    "use strict";
+    import_bcryptjs2 = __toESM(require("bcryptjs"));
+  }
+});
 
 // backend/src/utils/textSimilarity.ts
 function tokenize(text) {
@@ -408,6 +476,11 @@ function locationSimilarity(a, b) {
   if (x.includes(y) || y.includes(x)) return 0.85;
   return diceSimilarity(x, y);
 }
+var init_textSimilarity = __esm({
+  "backend/src/utils/textSimilarity.ts"() {
+    "use strict";
+  }
+});
 
 // backend/src/services/matchingService.ts
 function matchLabel(total) {
@@ -452,56 +525,74 @@ function scoreMatch(a, b) {
 function rankMatches(target, candidates) {
   return candidates.map((item) => ({ item, score: scoreMatch(target, item) })).filter((m) => m.score.total >= 40).sort((x, y) => y.score.total - x.score.total);
 }
+var init_matchingService = __esm({
+  "backend/src/services/matchingService.ts"() {
+    "use strict";
+    init_textSimilarity();
+  }
+});
 
 // backend/src/models/Notification.ts
-var import_mongoose4 = __toESM(require("mongoose"));
-var NotificationSchema = new import_mongoose4.Schema(
-  {
-    userId: { type: import_mongoose4.Schema.Types.ObjectId, ref: "User", required: true },
-    title: { type: String, required: true, trim: true },
-    message: { type: String, required: true, trim: true },
-    type: { type: String, default: "info", trim: true },
-    itemId: { type: import_mongoose4.Schema.Types.ObjectId, ref: "Item" },
-    claimId: { type: import_mongoose4.Schema.Types.ObjectId, ref: "Claim" },
-    read: { type: Boolean, default: false }
-  },
-  { timestamps: true }
-);
-NotificationSchema.index({ userId: 1, createdAt: -1 });
-NotificationSchema.set("toJSON", {
-  transform: (_doc, ret) => {
-    delete ret.__v;
-    return ret;
+var import_mongoose4, NotificationSchema, Notification;
+var init_Notification = __esm({
+  "backend/src/models/Notification.ts"() {
+    "use strict";
+    import_mongoose4 = __toESM(require("mongoose"));
+    NotificationSchema = new import_mongoose4.Schema(
+      {
+        userId: { type: import_mongoose4.Schema.Types.ObjectId, ref: "User", required: true },
+        title: { type: String, required: true, trim: true },
+        message: { type: String, required: true, trim: true },
+        type: { type: String, default: "info", trim: true },
+        itemId: { type: import_mongoose4.Schema.Types.ObjectId, ref: "Item" },
+        claimId: { type: import_mongoose4.Schema.Types.ObjectId, ref: "Claim" },
+        read: { type: Boolean, default: false }
+      },
+      { timestamps: true }
+    );
+    NotificationSchema.index({ userId: 1, createdAt: -1 });
+    NotificationSchema.set("toJSON", {
+      transform: (_doc, ret) => {
+        delete ret.__v;
+        return ret;
+      }
+    });
+    Notification = import_mongoose4.default.model(
+      "Notification",
+      NotificationSchema
+    );
   }
 });
-var Notification = import_mongoose4.default.model(
-  "Notification",
-  NotificationSchema
-);
 
 // backend/src/models/AuditLog.ts
-var import_mongoose5 = __toESM(require("mongoose"));
-var AuditLogSchema = new import_mongoose5.Schema(
-  {
-    actorId: { type: import_mongoose5.Schema.Types.ObjectId, ref: "User" },
-    action: { type: String, required: true, trim: true },
-    entityType: { type: String, required: true, trim: true },
-    entityId: { type: import_mongoose5.Schema.Types.ObjectId },
-    meta: { type: import_mongoose5.Schema.Types.Mixed }
-  },
-  { timestamps: { createdAt: true, updatedAt: false } }
-);
-AuditLogSchema.index({ entityType: 1, entityId: 1, createdAt: -1 });
-AuditLogSchema.set("toJSON", {
-  transform: (_doc, ret) => {
-    delete ret.__v;
-    return ret;
+var import_mongoose5, AuditLogSchema, AuditLog;
+var init_AuditLog = __esm({
+  "backend/src/models/AuditLog.ts"() {
+    "use strict";
+    import_mongoose5 = __toESM(require("mongoose"));
+    AuditLogSchema = new import_mongoose5.Schema(
+      {
+        actorId: { type: import_mongoose5.Schema.Types.ObjectId, ref: "User" },
+        action: { type: String, required: true, trim: true },
+        entityType: { type: String, required: true, trim: true },
+        entityId: { type: import_mongoose5.Schema.Types.ObjectId },
+        meta: { type: import_mongoose5.Schema.Types.Mixed }
+      },
+      { timestamps: { createdAt: true, updatedAt: false } }
+    );
+    AuditLogSchema.index({ entityType: 1, entityId: 1, createdAt: -1 });
+    AuditLogSchema.set("toJSON", {
+      transform: (_doc, ret) => {
+        delete ret.__v;
+        return ret;
+      }
+    });
+    AuditLog = import_mongoose5.default.model(
+      "AuditLog",
+      AuditLogSchema
+    );
   }
 });
-var AuditLog = import_mongoose5.default.model(
-  "AuditLog",
-  AuditLogSchema
-);
 
 // backend/src/services/activityService.ts
 async function createNotification(params) {
@@ -523,73 +614,15 @@ async function createAuditLog(params) {
     meta: params.meta
   });
 }
+var init_activityService = __esm({
+  "backend/src/services/activityService.ts"() {
+    "use strict";
+    init_Notification();
+    init_AuditLog();
+  }
+});
 
 // backend/src/controllers/itemController.ts
-var createItem = asyncHandler(async (req, res) => {
-  const {
-    type,
-    title,
-    category,
-    description,
-    color,
-    brand,
-    location,
-    date,
-    time,
-    imageUrl,
-    campusId,
-    buildingId,
-    verificationQuestion,
-    verificationAnswer
-  } = req.body;
-  if (!["lost", "found"].includes(type)) {
-    throw new ApiError(400, "type must be 'lost' or 'found'");
-  }
-  if (!title || !description || !location || !date) {
-    throw new ApiError(
-      400,
-      "title, description, location and date are required"
-    );
-  }
-  const cat = String(category || "other").toLowerCase().trim();
-  const item = {
-    type,
-    title,
-    category: cat,
-    description,
-    color: color ? color.toLowerCase() : void 0,
-    brand,
-    location,
-    date: new Date(date),
-    time,
-    imageUrl,
-    campusId,
-    buildingId,
-    createdBy: req.user._id,
-    status: "active",
-    claimStatus: "none"
-  };
-  if (verificationAnswer) {
-    item.verification = {
-      question: verificationQuestion || "Describe a detail only the true owner would know.",
-      answerHash: await hashAnswer(String(verificationAnswer))
-    };
-  }
-  const created = await Item.create(item);
-  await createAuditLog({
-    actorId: req.user._id,
-    action: "item.create",
-    entityType: "item",
-    entityId: created._id,
-    meta: { type: created.type }
-  });
-  await notifyPossibleMatches(created);
-  const populated = await created.populate(
-    "createdBy",
-    "name email role department"
-  );
-  res.status(201).json({ success: true, data: { item: populated } });
-});
 async function notifyPossibleMatches(newItem) {
   const oppositeType = newItem.type === "lost" ? "found" : "lost";
   const candidates = await Item.find({
@@ -620,507 +653,664 @@ async function notifyPossibleMatches(newItem) {
     }
   }
 }
-var listItems = asyncHandler(async (req, res) => {
-  const {
-    type,
-    category,
-    location,
-    color,
-    brand,
-    status,
-    q,
-    page = "1",
-    limit = "20"
-  } = req.query;
-  const filter = {};
-  if (type && ["lost", "found"].includes(type)) filter.type = type;
-  if (category) filter.category = category.toLowerCase();
-  if (location)
-    filter.location = { $regex: location.trim(), $options: "i" };
-  if (color) filter.color = color.toLowerCase();
-  if (brand) filter.brand = { $regex: brand.trim(), $options: "i" };
-  if (status) filter.status = status;
-  if (q) {
-    filter.$or = [
-      { title: { $regex: q.trim(), $options: "i" } },
-      { description: { $regex: q.trim(), $options: "i" } },
-      { category: { $regex: q.trim(), $options: "i" } }
-    ];
-  }
-  const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
-  const [items, total] = await Promise.all([
-    Item.find(filter).populate("createdBy", "name email role department").sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum),
-    Item.countDocuments(filter)
-  ]);
-  res.json({
-    success: true,
-    data: { items, total, page: pageNum, pages: Math.ceil(total / limitNum) }
-  });
-});
-var getItem = asyncHandler(async (req, res) => {
-  const item = await Item.findById(req.params.id).populate(
-    "createdBy",
-    "name email role department"
-  );
-  if (!item) throw new ApiError(404, "Item not found");
-  res.json({ success: true, data: { item } });
-});
-var getItemMatches = asyncHandler(
-  async (req, res) => {
-    const item = await Item.findById(req.params.id);
-    if (!item) throw new ApiError(404, "Item not found");
-    const oppositeType = item.type === "lost" ? "found" : "lost";
-    const candidates = await Item.find({
-      type: oppositeType,
-      _id: { $ne: item._id },
-      status: { $ne: "returned" }
-    }).populate("createdBy", "name email role department").limit(200);
-    const matches = rankMatches(item, candidates).map((m) => ({
-      item: m.item,
-      score: m.score
-    }));
-    res.json({
-      success: true,
-      data: { itemId: item._id, matches }
+var createItem, listItems, getItem, getItemMatches, updateItem, deleteItem, myReports;
+var init_itemController = __esm({
+  "backend/src/controllers/itemController.ts"() {
+    "use strict";
+    init_Item();
+    init_asyncHandler();
+    init_hash();
+    init_matchingService();
+    init_activityService();
+    createItem = asyncHandler(async (req, res) => {
+      const {
+        type,
+        title,
+        category,
+        description,
+        color,
+        brand,
+        location,
+        date,
+        time,
+        imageUrl,
+        campusId,
+        buildingId,
+        verificationQuestion,
+        verificationAnswer
+      } = req.body;
+      if (!["lost", "found"].includes(type)) {
+        throw new ApiError(400, "type must be 'lost' or 'found'");
+      }
+      if (!title || !description || !location || !date) {
+        throw new ApiError(
+          400,
+          "title, description, location and date are required"
+        );
+      }
+      const cat = String(category || "other").toLowerCase().trim();
+      const item = {
+        type,
+        title,
+        category: cat,
+        description,
+        color: color ? color.toLowerCase() : void 0,
+        brand,
+        location,
+        date: new Date(date),
+        time,
+        imageUrl,
+        campusId,
+        buildingId,
+        createdBy: req.user._id,
+        status: "active",
+        claimStatus: "none"
+      };
+      if (verificationAnswer) {
+        item.verification = {
+          question: verificationQuestion || "Describe a detail only the true owner would know.",
+          answerHash: await hashAnswer(String(verificationAnswer))
+        };
+      }
+      const created = await Item.create(item);
+      await createAuditLog({
+        actorId: req.user._id,
+        action: "item.create",
+        entityType: "item",
+        entityId: created._id,
+        meta: { type: created.type }
+      });
+      await notifyPossibleMatches(created);
+      const populated = await created.populate(
+        "createdBy",
+        "name email role department"
+      );
+      res.status(201).json({ success: true, data: { item: populated } });
+    });
+    listItems = asyncHandler(async (req, res) => {
+      const {
+        type,
+        category,
+        location,
+        color,
+        brand,
+        status,
+        q,
+        page = "1",
+        limit = "20"
+      } = req.query;
+      const filter = {};
+      if (type && ["lost", "found"].includes(type)) filter.type = type;
+      if (category) filter.category = category.toLowerCase();
+      if (location)
+        filter.location = { $regex: location.trim(), $options: "i" };
+      if (color) filter.color = color.toLowerCase();
+      if (brand) filter.brand = { $regex: brand.trim(), $options: "i" };
+      if (status) filter.status = status;
+      if (q) {
+        filter.$or = [
+          { title: { $regex: q.trim(), $options: "i" } },
+          { description: { $regex: q.trim(), $options: "i" } },
+          { category: { $regex: q.trim(), $options: "i" } }
+        ];
+      }
+      const pageNum = Math.max(1, parseInt(page, 10) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+      const [items, total] = await Promise.all([
+        Item.find(filter).populate("createdBy", "name email role department").sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum),
+        Item.countDocuments(filter)
+      ]);
+      res.json({
+        success: true,
+        data: { items, total, page: pageNum, pages: Math.ceil(total / limitNum) }
+      });
+    });
+    getItem = asyncHandler(async (req, res) => {
+      const item = await Item.findById(req.params.id).populate(
+        "createdBy",
+        "name email role department"
+      );
+      if (!item) throw new ApiError(404, "Item not found");
+      res.json({ success: true, data: { item } });
+    });
+    getItemMatches = asyncHandler(
+      async (req, res) => {
+        const item = await Item.findById(req.params.id);
+        if (!item) throw new ApiError(404, "Item not found");
+        const oppositeType = item.type === "lost" ? "found" : "lost";
+        const candidates = await Item.find({
+          type: oppositeType,
+          _id: { $ne: item._id },
+          status: { $ne: "returned" }
+        }).populate("createdBy", "name email role department").limit(200);
+        const matches = rankMatches(item, candidates).map((m) => ({
+          item: m.item,
+          score: m.score
+        }));
+        res.json({
+          success: true,
+          data: { itemId: item._id, matches }
+        });
+      }
+    );
+    updateItem = asyncHandler(async (req, res) => {
+      const item = await Item.findById(req.params.id);
+      if (!item) throw new ApiError(404, "Item not found");
+      const isOwner = item.createdBy.toString() === req.user._id.toString();
+      if (!isOwner && req.user.role !== "admin") {
+        throw new ApiError(403, "You can only edit your own item");
+      }
+      const editable = [
+        "title",
+        "category",
+        "description",
+        "color",
+        "brand",
+        "location",
+        "date",
+        "time",
+        "imageUrl",
+        "campusId",
+        "buildingId"
+      ];
+      for (const field of editable) {
+        if (req.body[field] !== void 0) {
+          item[field] = req.body[field];
+        }
+      }
+      if (req.body.status && req.user.role === "admin") {
+        item.status = req.body.status;
+      }
+      const saved = await item.save();
+      await createAuditLog({
+        actorId: req.user._id,
+        action: "item.update",
+        entityType: "item",
+        entityId: saved._id
+      });
+      await saved.populate("createdBy", "name email role department");
+      res.json({ success: true, data: { item: saved } });
+    });
+    deleteItem = asyncHandler(async (req, res) => {
+      const item = await Item.findById(req.params.id);
+      if (!item) throw new ApiError(404, "Item not found");
+      const isOwner = item.createdBy.toString() === req.user._id.toString();
+      if (!isOwner && req.user.role !== "admin") {
+        throw new ApiError(403, "You can only delete your own item");
+      }
+      await item.deleteOne();
+      await createAuditLog({
+        actorId: req.user._id,
+        action: "item.delete",
+        entityType: "item",
+        entityId: item._id
+      });
+      res.json({ success: true, message: "Item deleted" });
+    });
+    myReports = asyncHandler(async (req, res) => {
+      const items = await Item.find({ createdBy: req.user._id }).sort({
+        createdAt: -1
+      });
+      res.json({ success: true, data: { items } });
     });
   }
-);
-var updateItem = asyncHandler(async (req, res) => {
-  const item = await Item.findById(req.params.id);
-  if (!item) throw new ApiError(404, "Item not found");
-  const isOwner = item.createdBy.toString() === req.user._id.toString();
-  if (!isOwner && req.user.role !== "admin") {
-    throw new ApiError(403, "You can only edit your own item");
-  }
-  const editable = [
-    "title",
-    "category",
-    "description",
-    "color",
-    "brand",
-    "location",
-    "date",
-    "time",
-    "imageUrl",
-    "campusId",
-    "buildingId"
-  ];
-  for (const field of editable) {
-    if (req.body[field] !== void 0) {
-      item[field] = req.body[field];
-    }
-  }
-  if (req.body.status && req.user.role === "admin") {
-    item.status = req.body.status;
-  }
-  const saved = await item.save();
-  await createAuditLog({
-    actorId: req.user._id,
-    action: "item.update",
-    entityType: "item",
-    entityId: saved._id
-  });
-  await saved.populate("createdBy", "name email role department");
-  res.json({ success: true, data: { item: saved } });
-});
-var deleteItem = asyncHandler(async (req, res) => {
-  const item = await Item.findById(req.params.id);
-  if (!item) throw new ApiError(404, "Item not found");
-  const isOwner = item.createdBy.toString() === req.user._id.toString();
-  if (!isOwner && req.user.role !== "admin") {
-    throw new ApiError(403, "You can only delete your own item");
-  }
-  await item.deleteOne();
-  await createAuditLog({
-    actorId: req.user._id,
-    action: "item.delete",
-    entityType: "item",
-    entityId: item._id
-  });
-  res.json({ success: true, message: "Item deleted" });
-});
-var myReports = asyncHandler(async (req, res) => {
-  const items = await Item.find({ createdBy: req.user._id }).sort({
-    createdAt: -1
-  });
-  res.json({ success: true, data: { items } });
 });
 
 // backend/src/models/Claim.ts
-var import_mongoose6 = __toESM(require("mongoose"));
-var ClaimSchema = new import_mongoose6.Schema(
-  {
-    itemId: { type: import_mongoose6.Schema.Types.ObjectId, ref: "Item", required: true },
-    claimantId: { type: import_mongoose6.Schema.Types.ObjectId, ref: "User", required: true },
-    reason: { type: String, required: true, trim: true },
-    verificationAnswerHash: { type: String, select: false },
-    verificationMatched: { type: Boolean },
-    status: {
-      type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending"
-    },
-    adminNotes: { type: String, trim: true },
-    reviewedBy: { type: import_mongoose6.Schema.Types.ObjectId, ref: "User" },
-    reviewedAt: { type: Date }
-  },
-  { timestamps: true }
-);
-ClaimSchema.index({ itemId: 1, claimantId: 1 }, { unique: true });
-ClaimSchema.set("toJSON", {
-  transform: (_doc, ret) => {
-    delete ret.__v;
-    delete ret.verificationAnswerHash;
-    return ret;
+var import_mongoose6, ClaimSchema, Claim;
+var init_Claim = __esm({
+  "backend/src/models/Claim.ts"() {
+    "use strict";
+    import_mongoose6 = __toESM(require("mongoose"));
+    ClaimSchema = new import_mongoose6.Schema(
+      {
+        itemId: { type: import_mongoose6.Schema.Types.ObjectId, ref: "Item", required: true },
+        claimantId: { type: import_mongoose6.Schema.Types.ObjectId, ref: "User", required: true },
+        reason: { type: String, required: true, trim: true },
+        verificationAnswerHash: { type: String, select: false },
+        verificationMatched: { type: Boolean },
+        status: {
+          type: String,
+          enum: ["pending", "approved", "rejected"],
+          default: "pending"
+        },
+        adminNotes: { type: String, trim: true },
+        reviewedBy: { type: import_mongoose6.Schema.Types.ObjectId, ref: "User" },
+        reviewedAt: { type: Date }
+      },
+      { timestamps: true }
+    );
+    ClaimSchema.index({ itemId: 1, claimantId: 1 }, { unique: true });
+    ClaimSchema.set("toJSON", {
+      transform: (_doc, ret) => {
+        delete ret.__v;
+        delete ret.verificationAnswerHash;
+        return ret;
+      }
+    });
+    Claim = import_mongoose6.default.model(
+      "Claim",
+      ClaimSchema
+    );
   }
 });
-var Claim = import_mongoose6.default.model(
-  "Claim",
-  ClaimSchema
-);
 
 // backend/src/controllers/claimController.ts
-var createClaim = asyncHandler(async (req, res) => {
-  const { reason, verificationAnswer } = req.body;
-  const item = await Item.findById(req.params.id).select(
-    "+verification.answerHash"
-  );
-  if (!item) throw new ApiError(404, "Item not found");
-  if (item.createdBy.toString() === req.user._id.toString()) {
-    throw new ApiError(400, "You cannot claim your own item");
-  }
-  if (item.status === "returned" || item.status === "closed") {
-    throw new ApiError(400, `This item is already ${item.status}`);
-  }
-  if (!reason || String(reason).trim().length < 5) {
-    throw new ApiError(400, "Please provide a reason for your claim");
-  }
-  const existing = await Claim.findOne({
-    itemId: item._id,
-    claimantId: req.user._id
-  });
-  if (existing) {
-    throw new ApiError(409, "You have already submitted a claim for this item");
-  }
-  let verificationMatched;
-  let answerHash;
-  if (verificationAnswer) {
-    answerHash = await hashAnswer(String(verificationAnswer));
-    if (item.verification?.answerHash) {
-      verificationMatched = await compareAnswer(
-        String(verificationAnswer),
-        item.verification.answerHash
+var createClaim, myClaims;
+var init_claimController = __esm({
+  "backend/src/controllers/claimController.ts"() {
+    "use strict";
+    init_Item();
+    init_Claim();
+    init_asyncHandler();
+    init_hash();
+    init_activityService();
+    createClaim = asyncHandler(async (req, res) => {
+      const { reason, verificationAnswer } = req.body;
+      const item = await Item.findById(req.params.id).select(
+        "+verification.answerHash"
       );
-    }
+      if (!item) throw new ApiError(404, "Item not found");
+      if (item.createdBy.toString() === req.user._id.toString()) {
+        throw new ApiError(400, "You cannot claim your own item");
+      }
+      if (item.status === "returned" || item.status === "closed") {
+        throw new ApiError(400, `This item is already ${item.status}`);
+      }
+      if (!reason || String(reason).trim().length < 5) {
+        throw new ApiError(400, "Please provide a reason for your claim");
+      }
+      const existing = await Claim.findOne({
+        itemId: item._id,
+        claimantId: req.user._id
+      });
+      if (existing) {
+        throw new ApiError(409, "You have already submitted a claim for this item");
+      }
+      let verificationMatched;
+      let answerHash;
+      if (verificationAnswer) {
+        answerHash = await hashAnswer(String(verificationAnswer));
+        if (item.verification?.answerHash) {
+          verificationMatched = await compareAnswer(
+            String(verificationAnswer),
+            item.verification.answerHash
+          );
+        }
+      }
+      const claim = await Claim.create({
+        itemId: item._id,
+        claimantId: req.user._id,
+        reason,
+        verificationAnswerHash: answerHash,
+        verificationMatched,
+        status: "pending"
+      });
+      item.claimStatus = "pending";
+      if (item.status === "active" || item.status === "matched") {
+        item.status = "claimed";
+      }
+      await item.save();
+      await createNotification({
+        userId: item.createdBy,
+        title: "New claim on your item",
+        message: `Someone submitted a claim for "${item.title}". Security will verify it.`,
+        type: "claim",
+        itemId: item._id,
+        claimId: claim._id
+      });
+      await createNotification({
+        userId: req.user._id,
+        title: "Claim submitted",
+        message: `Your claim for "${item.title}" has been submitted and is pending review.`,
+        type: "claim",
+        itemId: item._id,
+        claimId: claim._id
+      });
+      await createAuditLog({
+        actorId: req.user._id,
+        action: "claim.create",
+        entityType: "claim",
+        entityId: claim._id,
+        meta: { itemId: item._id }
+      });
+      res.status(201).json({
+        success: true,
+        message: "Claim submitted. Ownership must be verified by university staff.",
+        data: { claim }
+      });
+    });
+    myClaims = asyncHandler(async (req, res) => {
+      const claims = await Claim.find({ claimantId: req.user._id }).populate("itemId").sort({ createdAt: -1 });
+      res.json({ success: true, data: { claims } });
+    });
   }
-  const claim = await Claim.create({
-    itemId: item._id,
-    claimantId: req.user._id,
-    reason,
-    verificationAnswerHash: answerHash,
-    verificationMatched,
-    status: "pending"
-  });
-  item.claimStatus = "pending";
-  if (item.status === "active" || item.status === "matched") {
-    item.status = "claimed";
-  }
-  await item.save();
-  await createNotification({
-    userId: item.createdBy,
-    title: "New claim on your item",
-    message: `Someone submitted a claim for "${item.title}". Security will verify it.`,
-    type: "claim",
-    itemId: item._id,
-    claimId: claim._id
-  });
-  await createNotification({
-    userId: req.user._id,
-    title: "Claim submitted",
-    message: `Your claim for "${item.title}" has been submitted and is pending review.`,
-    type: "claim",
-    itemId: item._id,
-    claimId: claim._id
-  });
-  await createAuditLog({
-    actorId: req.user._id,
-    action: "claim.create",
-    entityType: "claim",
-    entityId: claim._id,
-    meta: { itemId: item._id }
-  });
-  res.status(201).json({
-    success: true,
-    message: "Claim submitted. Ownership must be verified by university staff.",
-    data: { claim }
-  });
-});
-var myClaims = asyncHandler(async (req, res) => {
-  const claims = await Claim.find({ claimantId: req.user._id }).populate("itemId").sort({ createdAt: -1 });
-  res.json({ success: true, data: { claims } });
 });
 
 // backend/src/routes/itemRoutes.ts
-var router2 = (0, import_express2.Router)();
-router2.use(authenticate);
-router2.post("/", createItem);
-router2.get("/", listItems);
-router2.get("/:id", getItem);
-router2.get("/:id/matches", getItemMatches);
-router2.patch("/:id", updateItem);
-router2.delete("/:id", deleteItem);
-router2.post("/:id/claim", createClaim);
-var itemRoutes_default = router2;
+var import_express2, router2, itemRoutes_default;
+var init_itemRoutes = __esm({
+  "backend/src/routes/itemRoutes.ts"() {
+    "use strict";
+    import_express2 = require("express");
+    init_itemController();
+    init_claimController();
+    init_auth();
+    router2 = (0, import_express2.Router)();
+    router2.use(authenticate);
+    router2.post("/", createItem);
+    router2.get("/", listItems);
+    router2.get("/:id", getItem);
+    router2.get("/:id/matches", getItemMatches);
+    router2.patch("/:id", updateItem);
+    router2.delete("/:id", deleteItem);
+    router2.post("/:id/claim", createClaim);
+    itemRoutes_default = router2;
+  }
+});
 
 // backend/src/routes/userRoutes.ts
-var import_express3 = require("express");
-var router3 = (0, import_express3.Router)();
-router3.use(authenticate);
-router3.get("/my-reports", myReports);
-router3.get("/my-claims", myClaims);
-var userRoutes_default = router3;
-
-// backend/src/routes/adminRoutes.ts
-var import_express4 = require("express");
+var import_express3, router3, userRoutes_default;
+var init_userRoutes = __esm({
+  "backend/src/routes/userRoutes.ts"() {
+    "use strict";
+    import_express3 = require("express");
+    init_itemController();
+    init_claimController();
+    init_auth();
+    router3 = (0, import_express3.Router)();
+    router3.use(authenticate);
+    router3.get("/my-reports", myReports);
+    router3.get("/my-claims", myClaims);
+    userRoutes_default = router3;
+  }
+});
 
 // backend/src/controllers/adminController.ts
-var listClaims = asyncHandler(async (req, res) => {
-  const { status } = req.query;
-  const filter = {};
-  if (status && ["pending", "approved", "rejected"].includes(status)) {
-    filter.status = status;
-  }
-  const claims = await Claim.find(filter).populate({ path: "itemId", populate: { path: "createdBy", select: "name email role" } }).populate("claimantId", "name email role department").sort({ createdAt: -1 });
-  res.json({ success: true, data: { claims } });
-});
-var getClaim = asyncHandler(async (req, res) => {
-  const claim = await Claim.findById(req.params.claimId).populate("claimantId", "name email role department phone").populate({ path: "itemId", populate: { path: "createdBy", select: "name email role department" } });
-  if (!claim) throw new ApiError(404, "Claim not found");
-  const item = claim.itemId;
-  let possibleMatches = [];
-  if (item && item.type) {
-    const oppositeType = item.type === "lost" ? "found" : "lost";
-    const candidates = await Item.find({
-      type: oppositeType,
-      _id: { $ne: item._id }
-    }).limit(100);
-    possibleMatches = rankMatches(item, candidates).slice(0, 5).map((m) => ({ item: m.item, score: m.score }));
-  }
-  res.json({
-    success: true,
-    data: {
-      claim,
-      verificationQuestion: item?.verification?.question || null,
-      verificationMatched: claim.verificationMatched ?? null,
-      possibleMatches
-    }
-  });
-});
-var reviewClaim = asyncHandler(async (req, res) => {
-  const { status, adminNotes } = req.body;
-  if (!["approved", "rejected"].includes(status)) {
-    throw new ApiError(400, "status must be 'approved' or 'rejected'");
-  }
-  const claim = await Claim.findById(req.params.claimId);
-  if (!claim) throw new ApiError(404, "Claim not found");
-  if (claim.claimantId.toString() === req.user._id.toString()) {
-    throw new ApiError(403, "You cannot review a claim you submitted");
-  }
-  if (claim.status !== "pending") {
-    throw new ApiError(400, `This claim has already been ${claim.status}`);
-  }
-  const item = await Item.findById(claim.itemId);
-  if (!item) throw new ApiError(404, "The claimed item no longer exists");
-  claim.status = status;
-  claim.adminNotes = adminNotes;
-  claim.reviewedBy = req.user._id;
-  claim.reviewedAt = /* @__PURE__ */ new Date();
-  await claim.save();
-  if (status === "approved") {
-    item.claimStatus = "approved";
-    item.status = "verified";
-    await item.save();
-    await createNotification({
-      userId: claim.claimantId,
-      title: "Claim approved",
-      message: `Your claim for "${item.title}" was approved by security.`,
-      type: "claim",
-      itemId: item._id,
-      claimId: claim._id
-    });
-  } else {
-    item.claimStatus = "rejected";
-    item.status = "active";
-    await item.save();
-    await createNotification({
-      userId: claim.claimantId,
-      title: "Claim rejected",
-      message: `Your claim for "${item.title}" was rejected after review.`,
-      type: "claim",
-      itemId: item._id,
-      claimId: claim._id
-    });
-  }
-  await createNotification({
-    userId: item.createdBy,
-    title: status === "approved" ? "Claim approved on your item" : "Claim rejected",
-    message: `The claim on "${item.title}" was ${status} by security.`,
-    type: "claim",
-    itemId: item._id,
-    claimId: claim._id
-  });
-  await createAuditLog({
-    actorId: req.user._id,
-    action: `claim.${status}`,
-    entityType: "claim",
-    entityId: claim._id,
-    meta: { itemId: item._id, adminNotes }
-  });
-  res.json({ success: true, message: `Claim ${status}`, data: { claim } });
-});
-var markReturned = asyncHandler(async (req, res) => {
-  const item = await Item.findById(req.params.id);
-  if (!item) throw new ApiError(404, "Item not found");
-  if (item.status === "returned") {
-    throw new ApiError(400, "Item is already marked as returned");
-  }
-  item.status = "returned";
-  item.returnedAt = /* @__PURE__ */ new Date();
-  await item.save();
-  await createNotification({
-    userId: item.createdBy,
-    title: "Item returned",
-    message: `Your item "${item.title}" has been marked as returned.`,
-    type: "returned",
-    itemId: item._id
-  });
-  const approvedClaim = await Claim.findOne({
-    itemId: item._id,
-    status: "approved"
-  });
-  if (approvedClaim) {
-    await createNotification({
-      userId: approvedClaim.claimantId,
-      title: "Item returned",
-      message: `The item "${item.title}" you claimed has been marked as returned.`,
-      type: "returned",
-      itemId: item._id,
-      claimId: approvedClaim._id
-    });
-  }
-  await createAuditLog({
-    actorId: req.user._id,
-    action: "item.returned",
-    entityType: "item",
-    entityId: item._id
-  });
-  res.json({ success: true, message: "Item marked as returned", data: { item } });
-});
-var getStats = asyncHandler(async (_req, res) => {
-  const [
-    totalUsers,
-    totalItems,
-    lostItems,
-    foundItems,
-    activeItems,
-    returnedItems,
-    totalClaims,
-    pendingClaims,
-    approvedClaims,
-    rejectedClaims
-  ] = await Promise.all([
-    User.countDocuments(),
-    Item.countDocuments(),
-    Item.countDocuments({ type: "lost" }),
-    Item.countDocuments({ type: "found" }),
-    Item.countDocuments({ status: { $in: ["active", "matched", "claimed"] } }),
-    Item.countDocuments({ status: "returned" }),
-    Claim.countDocuments(),
-    Claim.countDocuments({ status: "pending" }),
-    Claim.countDocuments({ status: "approved" }),
-    Claim.countDocuments({ status: "rejected" })
-  ]);
-  res.json({
-    success: true,
-    data: {
-      users: totalUsers,
-      items: {
-        total: totalItems,
-        lost: lostItems,
-        found: foundItems,
-        active: activeItems,
-        returned: returnedItems
-      },
-      claims: {
-        total: totalClaims,
-        pending: pendingClaims,
-        approved: approvedClaims,
-        rejected: rejectedClaims
+var listClaims, getClaim, reviewClaim, markReturned, getStats;
+var init_adminController = __esm({
+  "backend/src/controllers/adminController.ts"() {
+    "use strict";
+    init_Claim();
+    init_Item();
+    init_User();
+    init_asyncHandler();
+    init_activityService();
+    init_matchingService();
+    listClaims = asyncHandler(async (req, res) => {
+      const { status } = req.query;
+      const filter = {};
+      if (status && ["pending", "approved", "rejected"].includes(status)) {
+        filter.status = status;
       }
-    }
-  });
+      const claims = await Claim.find(filter).populate({ path: "itemId", populate: { path: "createdBy", select: "name email role" } }).populate("claimantId", "name email role department").sort({ createdAt: -1 });
+      res.json({ success: true, data: { claims } });
+    });
+    getClaim = asyncHandler(async (req, res) => {
+      const claim = await Claim.findById(req.params.claimId).populate("claimantId", "name email role department phone").populate({ path: "itemId", populate: { path: "createdBy", select: "name email role department" } });
+      if (!claim) throw new ApiError(404, "Claim not found");
+      const item = claim.itemId;
+      let possibleMatches = [];
+      if (item && item.type) {
+        const oppositeType = item.type === "lost" ? "found" : "lost";
+        const candidates = await Item.find({
+          type: oppositeType,
+          _id: { $ne: item._id }
+        }).limit(100);
+        possibleMatches = rankMatches(item, candidates).slice(0, 5).map((m) => ({ item: m.item, score: m.score }));
+      }
+      res.json({
+        success: true,
+        data: {
+          claim,
+          verificationQuestion: item?.verification?.question || null,
+          verificationMatched: claim.verificationMatched ?? null,
+          possibleMatches
+        }
+      });
+    });
+    reviewClaim = asyncHandler(async (req, res) => {
+      const { status, adminNotes } = req.body;
+      if (!["approved", "rejected"].includes(status)) {
+        throw new ApiError(400, "status must be 'approved' or 'rejected'");
+      }
+      const claim = await Claim.findById(req.params.claimId);
+      if (!claim) throw new ApiError(404, "Claim not found");
+      if (claim.claimantId.toString() === req.user._id.toString()) {
+        throw new ApiError(403, "You cannot review a claim you submitted");
+      }
+      if (claim.status !== "pending") {
+        throw new ApiError(400, `This claim has already been ${claim.status}`);
+      }
+      const item = await Item.findById(claim.itemId);
+      if (!item) throw new ApiError(404, "The claimed item no longer exists");
+      claim.status = status;
+      claim.adminNotes = adminNotes;
+      claim.reviewedBy = req.user._id;
+      claim.reviewedAt = /* @__PURE__ */ new Date();
+      await claim.save();
+      if (status === "approved") {
+        item.claimStatus = "approved";
+        item.status = "verified";
+        await item.save();
+        await createNotification({
+          userId: claim.claimantId,
+          title: "Claim approved",
+          message: `Your claim for "${item.title}" was approved by security.`,
+          type: "claim",
+          itemId: item._id,
+          claimId: claim._id
+        });
+      } else {
+        item.claimStatus = "rejected";
+        item.status = "active";
+        await item.save();
+        await createNotification({
+          userId: claim.claimantId,
+          title: "Claim rejected",
+          message: `Your claim for "${item.title}" was rejected after review.`,
+          type: "claim",
+          itemId: item._id,
+          claimId: claim._id
+        });
+      }
+      await createNotification({
+        userId: item.createdBy,
+        title: status === "approved" ? "Claim approved on your item" : "Claim rejected",
+        message: `The claim on "${item.title}" was ${status} by security.`,
+        type: "claim",
+        itemId: item._id,
+        claimId: claim._id
+      });
+      await createAuditLog({
+        actorId: req.user._id,
+        action: `claim.${status}`,
+        entityType: "claim",
+        entityId: claim._id,
+        meta: { itemId: item._id, adminNotes }
+      });
+      res.json({ success: true, message: `Claim ${status}`, data: { claim } });
+    });
+    markReturned = asyncHandler(async (req, res) => {
+      const item = await Item.findById(req.params.id);
+      if (!item) throw new ApiError(404, "Item not found");
+      if (item.status === "returned") {
+        throw new ApiError(400, "Item is already marked as returned");
+      }
+      item.status = "returned";
+      item.returnedAt = /* @__PURE__ */ new Date();
+      await item.save();
+      await createNotification({
+        userId: item.createdBy,
+        title: "Item returned",
+        message: `Your item "${item.title}" has been marked as returned.`,
+        type: "returned",
+        itemId: item._id
+      });
+      const approvedClaim = await Claim.findOne({
+        itemId: item._id,
+        status: "approved"
+      });
+      if (approvedClaim) {
+        await createNotification({
+          userId: approvedClaim.claimantId,
+          title: "Item returned",
+          message: `The item "${item.title}" you claimed has been marked as returned.`,
+          type: "returned",
+          itemId: item._id,
+          claimId: approvedClaim._id
+        });
+      }
+      await createAuditLog({
+        actorId: req.user._id,
+        action: "item.returned",
+        entityType: "item",
+        entityId: item._id
+      });
+      res.json({ success: true, message: "Item marked as returned", data: { item } });
+    });
+    getStats = asyncHandler(async (_req, res) => {
+      const [
+        totalUsers,
+        totalItems,
+        lostItems,
+        foundItems,
+        activeItems,
+        returnedItems,
+        totalClaims,
+        pendingClaims,
+        approvedClaims,
+        rejectedClaims
+      ] = await Promise.all([
+        User.countDocuments(),
+        Item.countDocuments(),
+        Item.countDocuments({ type: "lost" }),
+        Item.countDocuments({ type: "found" }),
+        Item.countDocuments({ status: { $in: ["active", "matched", "claimed"] } }),
+        Item.countDocuments({ status: "returned" }),
+        Claim.countDocuments(),
+        Claim.countDocuments({ status: "pending" }),
+        Claim.countDocuments({ status: "approved" }),
+        Claim.countDocuments({ status: "rejected" })
+      ]);
+      res.json({
+        success: true,
+        data: {
+          users: totalUsers,
+          items: {
+            total: totalItems,
+            lost: lostItems,
+            found: foundItems,
+            active: activeItems,
+            returned: returnedItems
+          },
+          claims: {
+            total: totalClaims,
+            pending: pendingClaims,
+            approved: approvedClaims,
+            rejected: rejectedClaims
+          }
+        }
+      });
+    });
+  }
 });
 
 // backend/src/routes/adminRoutes.ts
-var router4 = (0, import_express4.Router)();
-router4.use(authenticate, authorize("admin"));
-router4.get("/stats", getStats);
-router4.get("/claims", listClaims);
-router4.get("/claims/:claimId", getClaim);
-router4.patch("/claims/:claimId", reviewClaim);
-router4.patch("/items/:id/return", markReturned);
-var adminRoutes_default = router4;
-
-// backend/src/routes/notificationRoutes.ts
-var import_express5 = require("express");
+var import_express4, router4, adminRoutes_default;
+var init_adminRoutes = __esm({
+  "backend/src/routes/adminRoutes.ts"() {
+    "use strict";
+    import_express4 = require("express");
+    init_adminController();
+    init_auth();
+    router4 = (0, import_express4.Router)();
+    router4.use(authenticate, authorize("admin"));
+    router4.get("/stats", getStats);
+    router4.get("/claims", listClaims);
+    router4.get("/claims/:claimId", getClaim);
+    router4.patch("/claims/:claimId", reviewClaim);
+    router4.patch("/items/:id/return", markReturned);
+    adminRoutes_default = router4;
+  }
+});
 
 // backend/src/controllers/notificationController.ts
-var myNotifications = asyncHandler(
-  async (req, res) => {
-    const notifications = await Notification.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(100);
-    const unread = await Notification.countDocuments({
-      userId: req.user._id,
-      read: false
+var myNotifications, markRead, markAllRead;
+var init_notificationController = __esm({
+  "backend/src/controllers/notificationController.ts"() {
+    "use strict";
+    init_Notification();
+    init_asyncHandler();
+    myNotifications = asyncHandler(
+      async (req, res) => {
+        const notifications = await Notification.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(100);
+        const unread = await Notification.countDocuments({
+          userId: req.user._id,
+          read: false
+        });
+        res.json({ success: true, data: { notifications, unread } });
+      }
+    );
+    markRead = asyncHandler(async (req, res) => {
+      const note = await Notification.findOne({
+        _id: req.params.id,
+        userId: req.user._id
+      });
+      if (!note) throw new ApiError(404, "Notification not found");
+      note.read = true;
+      await note.save();
+      res.json({ success: true, data: { notification: note } });
     });
-    res.json({ success: true, data: { notifications, unread } });
+    markAllRead = asyncHandler(async (req, res) => {
+      await Notification.updateMany(
+        { userId: req.user._id, read: false },
+        { read: true }
+      );
+      res.json({ success: true, message: "All notifications marked as read" });
+    });
   }
-);
-var markRead = asyncHandler(async (req, res) => {
-  const note = await Notification.findOne({
-    _id: req.params.id,
-    userId: req.user._id
-  });
-  if (!note) throw new ApiError(404, "Notification not found");
-  note.read = true;
-  await note.save();
-  res.json({ success: true, data: { notification: note } });
-});
-var markAllRead = asyncHandler(async (req, res) => {
-  await Notification.updateMany(
-    { userId: req.user._id, read: false },
-    { read: true }
-  );
-  res.json({ success: true, message: "All notifications marked as read" });
 });
 
 // backend/src/routes/notificationRoutes.ts
-var router5 = (0, import_express5.Router)();
-router5.use(authenticate);
-router5.get("/", myNotifications);
-router5.patch("/read-all", markAllRead);
-router5.patch("/:id/read", markRead);
-var notificationRoutes_default = router5;
+var import_express5, router5, notificationRoutes_default;
+var init_notificationRoutes = __esm({
+  "backend/src/routes/notificationRoutes.ts"() {
+    "use strict";
+    import_express5 = require("express");
+    init_notificationController();
+    init_auth();
+    router5 = (0, import_express5.Router)();
+    router5.use(authenticate);
+    router5.get("/", myNotifications);
+    router5.patch("/read-all", markAllRead);
+    router5.patch("/:id/read", markRead);
+    notificationRoutes_default = router5;
+  }
+});
 
 // backend/src/routes/index.ts
-var router6 = (0, import_express6.Router)();
-router6.get("/health", health);
-router6.use("/auth", authRoutes_default);
-router6.use("/items", itemRoutes_default);
-router6.use("/notifications", notificationRoutes_default);
-router6.use("/admin", adminRoutes_default);
-router6.use("/", userRoutes_default);
-var routes_default = router6;
+var import_express6, router6, routes_default;
+var init_routes = __esm({
+  "backend/src/routes/index.ts"() {
+    "use strict";
+    import_express6 = require("express");
+    init_healthController();
+    init_authRoutes();
+    init_itemRoutes();
+    init_userRoutes();
+    init_adminRoutes();
+    init_notificationRoutes();
+    router6 = (0, import_express6.Router)();
+    router6.get("/health", health);
+    router6.use("/auth", authRoutes_default);
+    router6.use("/items", itemRoutes_default);
+    router6.use("/notifications", notificationRoutes_default);
+    router6.use("/admin", adminRoutes_default);
+    router6.use("/", userRoutes_default);
+    routes_default = router6;
+  }
+});
 
 // backend/src/middleware/errorHandler.ts
 function notFoundHandler(req, _res, next) {
@@ -1147,8 +1337,18 @@ function errorHandler(err, _req, res, _next) {
   }
   res.status(statusCode).json({ success: false, message });
 }
+var init_errorHandler = __esm({
+  "backend/src/middleware/errorHandler.ts"() {
+    "use strict";
+    init_asyncHandler();
+  }
+});
 
 // backend/src/app.ts
+var app_exports = {};
+__export(app_exports, {
+  createApp: () => createApp
+});
 function createApp() {
   const app2 = (0, import_express7.default)();
   app2.use((0, import_cors.default)());
@@ -1166,38 +1366,75 @@ function createApp() {
   app2.use(errorHandler);
   return app2;
 }
+var import_express7, import_cors;
+var init_app = __esm({
+  "backend/src/app.ts"() {
+    "use strict";
+    import_express7 = __toESM(require("express"));
+    import_cors = __toESM(require("cors"));
+    init_routes();
+    init_errorHandler();
+  }
+});
 
-// serverless-entry.ts
-var app = createApp();
+// serverless-entry.js
+var app = null;
+var initError = null;
+function safeInit() {
+  if (app || initError) return;
+  try {
+    const { createApp: createApp2 } = (init_app(), __toCommonJS(app_exports));
+    app = createApp2();
+  } catch (e) {
+    initError = e;
+  }
+}
 var dbPromise = null;
 function ensureDb() {
   if (!dbPromise) {
     dbPromise = (async () => {
+      const { connectDB: connectDB2 } = (init_db(), __toCommonJS(db_exports));
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          await connectDB();
-          return;
+          await connectDB2();
+          return { ok: true };
         } catch (err) {
-          console.error(
-            "[vercel] MongoDB connect attempt " + attempt + " failed:",
-            err && err.message ? err.message : err
-          );
-          if (attempt < 3) await new Promise((r) => setTimeout(r, 1e3));
+          const msg = err && err.message ? err.message : String(err);
+          console.error("[vercel] MongoDB connect attempt " + attempt + " failed:", msg);
+          if (attempt === 3) return { ok: false, error: msg };
+          await new Promise((r) => setTimeout(r, 800));
         }
       }
-    })().catch((err) => {
-      dbPromise = null;
-      throw err;
-    });
+    })();
   }
   return dbPromise;
 }
-async function handler(req, res) {
-  try {
-    await ensureDb();
-  } catch (err) {
-    console.error("[vercel] db connect error:", err && err.message ? err.message : err);
+function describe(e) {
+  return {
+    message: e && e.message ? e.message : String(e),
+    stack: e && e.stack ? String(e.stack).split("\n").slice(0, 8) : null
+  };
+}
+module.exports = async function handler(req, res) {
+  safeInit();
+  if (initError) {
+    res.status(200).json({
+      success: false,
+      stage: "init",
+      error: describe(initError),
+      env: {
+        hasMongoUri: !!process.env.MONGODB_URI,
+        mongoUriShape: process.env.MONGODB_URI ? String(process.env.MONGODB_URI).slice(0, 14) + "..." : null,
+        hasJwtSecret: !!process.env.JWT_SECRET,
+        node: process.version
+      }
+    });
+    return;
+  }
+  const db = await ensureDb();
+  if (!db.ok) {
+    res.status(200).json({ success: false, stage: "db", error: db.error });
+    return;
   }
   app(req, res);
-}
-module.exports = module.exports.default || module.exports;
+};
